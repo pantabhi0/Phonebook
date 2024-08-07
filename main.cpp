@@ -4,8 +4,8 @@
 
 using namespace std;
 
-class Contact
-{
+// Contact class definition
+class Contact {
 private:
     string phoneNumber;
     string name;
@@ -13,148 +13,80 @@ private:
     string address;
 
 public:
-    Contact();
-    Contact(string phoneNumber, string name, string email = "", string address = "");
+    Contact() {}
+    Contact(string phoneNumber, string name, string email = "", string address = "")
+        : phoneNumber(phoneNumber), name(name), email(email), address(address) {}
 
-    void setPhoneNumber(const string &phoneNumber);
-    void setName(const string &name);
-    void setEmail(const string &email);
-    void setAddress(const string &address);
+    void setPhoneNumber(const string& phoneNumber) { this->phoneNumber = phoneNumber; }
+    void setName(const string& name) { this->name = name; }
+    void setEmail(const string& email) { this->email = email; }
+    void setAddress(const string& address) { this->address = address; }
 
-    string getPhoneNumber() const;
-    string getName() const;
-    string getEmail() const;
-    string getAddress() const;
+    string getPhoneNumber() const { return phoneNumber; }
+    string getName() const { return name; }
+    string getEmail() const { return email; }
+    string getAddress() const { return address; }
 
-    void display() const;
+    void display() const {
+        cout << "Name: " << name << "\n";
+        cout << "Phone Number: " << phoneNumber << "\n";
+        if (!email.empty()) {
+            cout << "Email: " << email << "\n";
+        }
+        if (!address.empty()) {
+            cout << "Address: " << address << "\n";
+        }
+        cout << endl;
+    }
 };
 
-Contact::Contact() {}
-
-Contact::Contact(string phoneNumber, string name, string email, string address)
-    : phoneNumber(phoneNumber), name(name), email(email), address(address) {}
-
-void Contact::setPhoneNumber(const string &phoneNumber)
-{
-    this->phoneNumber = phoneNumber;
-}
-
-void Contact::setName(const string &name)
-{
-    this->name = name;
-}
-
-void Contact::setEmail(const string &email)
-{
-    this->email = email;
-}
-
-void Contact::setAddress(const string &address)
-{
-    this->address = address;
-}
-
-string Contact::getPhoneNumber() const
-{
-    return phoneNumber;
-}
-
-string Contact::getName() const
-{
-    return name;
-}
-
-string Contact::getEmail() const
-{
-    return email;
-}
-
-string Contact::getAddress() const
-{
-    return address;
-}
-
-void Contact::display() const
-{
-    cout << "Name: " << name << "\n";
-    cout << "Phone Number: " << phoneNumber << "\n";
-    if (!email.empty())
-    {
-        cout << "Email: " << email << "\n";
-    }
-    if (!address.empty())
-    {
-        cout << "Address: " << address << "\n";
-    }
-    cout << endl;
-}
-
-class Node
-{
-public:
-    Contact contact;
-    Node *next;
-    Node(Contact contact) : contact(contact), next(nullptr) {}
-};
-
-class Phonebook
-{
+// Phonebook class definition
+class Phonebook {
 private:
-    Node *head;
+    static const int MAX_CONTACTS = 100; // Maximum number of contacts
+    Contact contacts[MAX_CONTACTS];
+    int contactCount;
 
-    Node *findContact(const string &phoneNumber);
-    void saveToFile();
-    void loadFromFile();
+    int findContactIndex(const string& phoneNumber) const;
 
 public:
-    Phonebook();
-    ~Phonebook();
+    Phonebook() : contactCount(0) {
+        loadFromFile();
+    }
+    ~Phonebook() {
+        saveToFile();
+    }
 
     void addContact();
-    void searchContact();
-    void showContacts();
+    void searchContact() const;
+    void showContacts() const;
     void modifyContact();
     void deleteContact();
+    void saveToFile() const;
+    void loadFromFile();
 };
 
-Phonebook::Phonebook() : head(nullptr)
-{
-    loadFromFile();
-}
-
-Phonebook::~Phonebook()
-{
-    Node *current = head;
-    while (current != nullptr)
-    {
-        Node *next = current->next;
-        delete current;
-        current = next;
-    }
-}
-
-Node *Phonebook::findContact(const string &phoneNumber)
-{
-    Node *current = head;
-    while (current != nullptr)
-    {
-        if (current->contact.getPhoneNumber() == phoneNumber)
-        {
-            return current;
+// Phonebook member function implementations
+int Phonebook::findContactIndex(const string& phoneNumber) const {
+    for (int i = 0; i < contactCount; ++i) {
+        if (contacts[i].getPhoneNumber() == phoneNumber) {
+            return i;
         }
-        current = current->next;
     }
-    return nullptr;
+    return -1;
 }
 
-void Phonebook::addContact()
-{
+void Phonebook::addContact() {
+    if (contactCount >= MAX_CONTACTS) {
+        cout << "Phonebook is full. Cannot add more contacts.\n";
+        return;
+    }
+
     string phoneNumber, name, email, address;
 
     cout << "Enter phone number: ";
     cin >> phoneNumber;
-    if (findContact(phoneNumber))
-    {
+    if (findContactIndex(phoneNumber) != -1) {
         cout << "Phone number already exists! Try again...\n";
         return;
     }
@@ -169,54 +101,38 @@ void Phonebook::addContact()
     cout << "Enter address (optional): ";
     getline(cin, address);
 
-    Contact newContact(phoneNumber, name, email, address);
-    Node *newNode = new Node(newContact);
-    newNode->next = head;
-    head = newNode;
-
-    saveToFile();
+    contacts[contactCount++] = Contact(phoneNumber, name, email, address);
     cout << "Phone details successfully stored.\n";
 }
 
-void Phonebook::searchContact()
-{
+void Phonebook::searchContact() const {
     string query;
     cout << "Enter phone number or name to search: ";
     cin.ignore();
     getline(cin, query);
 
-    Node *current = head;
-    while (current != nullptr)
-    {
-        if (current->contact.getPhoneNumber() == query || current->contact.getName() == query)
-        {
-            current->contact.display();
+    for (int i = 0; i < contactCount; ++i) {
+        if (contacts[i].getPhoneNumber() == query || contacts[i].getName() == query) {
+            contacts[i].display();
             return;
         }
-        current = current->next;
     }
     cout << "Record not found.\n";
 }
 
-void Phonebook::showContacts()
-{
-    Node *current = head;
-    while (current != nullptr)
-    {
-        current->contact.display();
-        current = current->next;
+void Phonebook::showContacts() const {
+    for (int i = 0; i < contactCount; ++i) {
+        contacts[i].display();
     }
 }
 
-void Phonebook::modifyContact()
-{
+void Phonebook::modifyContact() {
     string phoneNumber;
     cout << "Enter the phone number of the record to modify: ";
     cin >> phoneNumber;
 
-    Node *contactNode = findContact(phoneNumber);
-    if (!contactNode)
-    {
+    int index = findContactIndex(phoneNumber);
+    if (index == -1) {
         cout << "Record doesn't exist! Try again...\n";
         return;
     }
@@ -233,86 +149,61 @@ void Phonebook::modifyContact()
     cout << "Enter new address (optional): ";
     getline(cin, newAddress);
 
-    contactNode->contact.setName(newName);
-    contactNode->contact.setEmail(newEmail);
-    contactNode->contact.setAddress(newAddress);
+    contacts[index].setName(newName);
+    contacts[index].setEmail(newEmail);
+    contacts[index].setAddress(newAddress);
 
-    saveToFile();
     cout << "Record modified successfully!\n";
 }
 
-void Phonebook::deleteContact()
-{
+void Phonebook::deleteContact() {
     string phoneNumber;
     cout << "Enter the phone number of the record to delete: ";
     cin >> phoneNumber;
 
-    Node *current = head;
-    Node *previous = nullptr;
-
-    while (current != nullptr && current->contact.getPhoneNumber() != phoneNumber)
-    {
-        previous = current;
-        current = current->next;
-    }
-
-    if (!current)
-    {
+    int index = findContactIndex(phoneNumber);
+    if (index == -1) {
         cout << "Record doesn't exist! Try again...\n";
         return;
     }
 
-    if (previous == nullptr)
-    {
-        head = current->next;
+    for (int i = index; i < contactCount - 1; ++i) {
+        contacts[i] = contacts[i + 1];
     }
-    else
-    {
-        previous->next = current->next;
-    }
+    --contactCount;
 
-    delete current;
-    saveToFile();
     cout << "Record deleted!\n";
 }
 
-void Phonebook::saveToFile()
-{
+void Phonebook::saveToFile() const {
     ofstream file("phonebook.txt", ios::trunc);
-    Node *current = head;
-    while (current != nullptr)
-    {
-        file << current->contact.getPhoneNumber() << "\n"
-             << current->contact.getName() << "\n"
-             << current->contact.getEmail() << "\n"
-             << current->contact.getAddress() << "\n";
-        current = current->next;
+    for (int i = 0; i < contactCount; ++i) {
+        file << contacts[i].getPhoneNumber() << "\n"
+             << contacts[i].getName() << "\n"
+             << contacts[i].getEmail() << "\n"
+             << contacts[i].getAddress() << "\n";
     }
     file.close();
 }
 
-void Phonebook::loadFromFile()
-{
+void Phonebook::loadFromFile() {
     ifstream file("phonebook.txt");
-    if (!file.is_open())
-        return;
+    if (!file.is_open()) return;
 
     string phoneNumber, name, email, address;
-    while (getline(file, phoneNumber))
-    {
+    while (getline(file, phoneNumber)) {
         getline(file, name);
         getline(file, email);
         getline(file, address);
-        Contact contact(phoneNumber, name, email, address);
-        Node *newNode = new Node(contact);
-        newNode->next = head;
-        head = newNode;
+        if (contactCount < MAX_CONTACTS) {
+            contacts[contactCount++] = Contact(phoneNumber, name, email, address);
+        }
     }
     file.close();
 }
 
-void displayMenu()
-{
+// Main function
+void displayMenu() {
     cout << "Phonebook Management System\n";
     cout << "1. Add Phone Record\n";
     cout << "2. Search Phone Record\n";
@@ -323,39 +214,36 @@ void displayMenu()
     cout << "Enter your choice: ";
 }
 
-int main()
-{
+int main() {
     Phonebook phonebook;
     int choice;
 
-    do
-    {
+    do {
         displayMenu();
         cin >> choice;
 
-        switch (choice)
-        {
-        case 1:
-            phonebook.addContact();
-            break;
-        case 2:
-            phonebook.searchContact();
-            break;
-        case 3:
-            phonebook.showContacts();
-            break;
-        case 4:
-            phonebook.modifyContact();
-            break;
-        case 5:
-            phonebook.deleteContact();
-            break;
-        case 6:
-            cout << "Exiting the program.\n";
-            break;
-        default:
-            cout << "Invalid choice! Please try again.\n";
-            break;
+        switch (choice) {
+            case 1:
+                phonebook.addContact();
+                break;
+            case 2:
+                phonebook.searchContact();
+                break;
+            case 3:
+                phonebook.showContacts();
+                break;
+            case 4:
+                phonebook.modifyContact();
+                break;
+            case 5:
+                phonebook.deleteContact();
+                break;
+            case 6:
+                cout << "Exiting the program.\n";
+                break;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+                break;
         }
     } while (choice != 6);
 
