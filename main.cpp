@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -202,19 +203,23 @@ void Phonebook::loadFromFile() {
     file.close();
 }
 
-// Main function
 void displayMenu() {
-    cout << "Phonebook Management System\n";
-    cout << "1. Add Phone Record\n";
-    cout << "2. Search Phone Record\n";
-    cout << "3. Show All Phone Records\n";
-    cout << "4. Modify Phone Record\n";
-    cout << "5. Delete Phone Record\n";
-    cout << "6. Exit\n";
+    cout << "\n+-----------------------------------+\n";
+    cout << "|  Phonebook Management System      |\n";
+    cout << "+-----------------------------------+\n";
+    cout << "|  1. Add Phone Record              |\n";
+    cout << "|  2. Search Phone Record           |\n";
+    cout << "|  3. Show All Phone Records        |\n";
+    cout << "|  4. Modify Phone Record           |\n";
+    cout << "|  5. Delete Phone Record           |\n";
+    cout << "|  6. Exit                          |\n";
+    cout << "+-----------------------------------+\n";
     cout << "Enter your choice: ";
 }
 
+// Main function
 int main() {
+SetConsoleTitleW(L"Phonebook Management System");
     Phonebook phonebook;
     int choice;
 
